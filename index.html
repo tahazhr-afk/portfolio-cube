@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taha Azhar — Lead CX / Product Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#F6F5F1; --surface:#FFFFFF; --muted:#EDECE6;
+    --ink:#15140A; --ink-2:#4E4C44; --ink-3:#86847B;
+    --yellow:#F5E74D; --sky:#ACD2F0; --green:#9BE58A; --coral:#EF9E9B; --peach-bg:#FDEDDF;
+    --border:#DFDDD6;
+    --shadow-lg: 0 24px 48px -12px rgba(21,20,10,.28), 0 8px 16px -8px rgba(21,20,10,.14);
+    --size: min(48vmin, 420px);
+    --u: calc(var(--size) / 3);
+    --w: calc(var(--u) * 0.9);          /* cubie body, leaves a visible seam */
+    --gap: calc(var(--size) * 0.012);   /* ink rim inside each cubie face */
+    --sticker-r: calc(var(--size) * 0.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--canvas);color:var(--ink);font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:15px;line-height:1.55;overflow:hidden;position:relative}
+
+  /* ---------- header ---------- */
+  header{position:absolute;inset:0 0 auto 0;display:flex;justify-content:space-between;align-items:center;padding:28px 40px;z-index:5}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .disc{width:40px;height:40px;border-radius:999px;background:var(--ink);color:var(--yellow);display:grid;place-items:center;font-weight:700;font-size:14px;letter-spacing:-.02em}
+  .brand .name{font-size:18px;font-weight:700;letter-spacing:-.01em;line-height:1.3}
+  .brand .role{font-size:13px;color:var(--ink-2);line-height:1.4}
+  nav{display:flex;gap:8px;align-items:center}
+  nav a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:600;padding:10px 16px;border-radius:999px;line-height:1.3;transition:background .15s}
+  nav a:hover{background:var(--muted)}
+  nav a.cta{background:var(--ink);color:var(--surface);padding:12px 20px;font-size:15px}
+  nav a.cta:hover{background:#33322B}
+
+  /* ---------- stage + cubies ---------- */
+  .stage{position:absolute;inset:0;display:grid;place-items:center;perspective:calc(var(--size)*3.4);cursor:grab;user-select:none;touch-action:none;transition:transform .36s cubic-bezier(.2,.8,.2,1)}
+  .stage.dragging{cursor:grabbing}
+  .cube{width:var(--size);height:var(--size);position:relative;transform-style:preserve-3d;will-change:transform}
+  .cubie{position:absolute;left:calc((var(--size) - var(--w))/2);top:calc((var(--size) - var(--w))/2);width:var(--w);height:var(--w);transform-style:preserve-3d}
+  .cf{position:absolute;inset:0;background:var(--ink);backface-visibility:hidden;border-radius:calc(var(--w)*.18)}
+  .cf.inner{background:#1c1b12}
+  .cf-f{transform:translateZ(calc(var(--w)/2))}
+  .cf-b{transform:rotateY(180deg) translateZ(calc(var(--w)/2))}
+  .cf-r{transform:rotateY(90deg) translateZ(calc(var(--w)/2))}
+  .cf-l{transform:rotateY(-90deg) translateZ(calc(var(--w)/2))}
+  .cf-u{transform:rotateX(90deg) translateZ(calc(var(--w)/2))}
+  .cf-d{transform:rotateX(-90deg) translateZ(calc(var(--w)/2))}
+
+  .sticker{
+    --c:var(--yellow);
+    position:absolute;inset:var(--gap);background:var(--c);color:var(--ink);border-radius:var(--sticker-r);
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:calc(var(--size)*.026);overflow:hidden;cursor:pointer;
+    box-shadow:inset 0 -2px 0 rgba(21,20,10,.08);
+  }
+  .sticker::after{ /* soft gloss like the reference render */
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(135deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.12) 38%,rgba(255,255,255,0) 60%);
+  }
+  .sticker.experience{--c:var(--yellow)}
+  .sticker.skills{--c:var(--sky)}
+  .sticker.projects{--c:var(--surface)}
+  .sticker.tools{--c:var(--green)}
+  .sticker.education{--c:var(--peach-bg)}
+  .sticker.contact{--c:var(--coral)}
+  .sticker .k{font-size:calc(var(--size)*.021);font-weight:600;text-transform:uppercase;letter-spacing:.8px;line-height:1.3;color:var(--ink-2);margin-bottom:calc(var(--size)*.008)}
+  .sticker .v{font-weight:700;font-size:calc(var(--size)*.03);line-height:1.15;letter-spacing:-.01em}
+  .sticker .v small{display:block;font-weight:500;font-size:calc(var(--size)*.021);line-height:1.35;color:var(--ink-2);margin-top:3px;letter-spacing:0}
+  .sticker.big .v{font-size:calc(var(--size)*.08);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .sticker.title{background:var(--ink);color:var(--c);justify-content:center;align-items:center;text-align:center;box-shadow:inset 0 0 0 3px var(--c)}
+  .sticker.title::after{opacity:.5}
+  .sticker.title .k{color:var(--c);opacity:.6}
+  .sticker.title .v{font-size:calc(var(--size)*.036);line-height:1.1;letter-spacing:-.02em}
+  .sticker.projects.title{color:var(--yellow);box-shadow:inset 0 0 0 3px var(--yellow)}
+  .sticker.projects.title .k{color:var(--yellow)}
+  .sticker.px{justify-content:center;align-items:center}
+  .sticker.px .disc{width:calc(var(--size)*.12);height:calc(var(--size)*.12);border-radius:999px;background:var(--ink);display:grid;place-items:center}
+  .sticker.px .disc svg{width:50%;height:50%;stroke:var(--c);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .sticker.projects.px .disc svg{stroke:var(--yellow)}
+  .sticker.px .k{position:absolute;left:calc(var(--size)*.026);bottom:calc(var(--size)*.018);margin:0}
+
+  /* ---------- footer controls ---------- */
+  .foot{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:space-between;align-items:flex-end;padding:28px 40px;gap:16px}
+  .rail{display:flex;gap:4px;flex-wrap:wrap;background:var(--surface);padding:6px;border-radius:999px;border:1px solid var(--border)}
+  .tab{font-family:inherit;font-size:13px;font-weight:600;line-height:1.3;padding:9px 14px;border:0;border-radius:999px;background:transparent;color:var(--ink-2);cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+  .tab:hover{background:var(--muted);color:var(--ink)}
+  .tab.active{background:var(--ink);color:var(--surface)}
+  .tab:focus-visible{outline:none;box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+  .tab .dot{width:8px;height:8px;border-radius:999px;background:var(--c,var(--ink))}
+  .right{display:flex;flex-direction:column;align-items:flex-end;gap:12px;transition:opacity .2s}
+  .hint{font-size:13px;color:var(--ink-2);text-align:right;line-height:1.5}
+  .hint b{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink);margin-bottom:4px}
+  .moves{color:var(--ink-3);font-weight:500;font-size:12px;font-variant-numeric:tabular-nums;min-width:58px;text-align:right}
+  .switch{display:inline-flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 14px 8px 18px;cursor:pointer;user-select:none}
+  .sw-label{font-size:14px;font-weight:600}
+  .sw-track{position:relative;width:44px;height:26px;border-radius:999px;background:var(--border);transition:background .2s;flex:none}
+  .sw-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:var(--surface);box-shadow:0 1px 2px rgba(21,20,10,.25);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
+  body.complete .sw-track{background:var(--yellow)}
+  body.complete .sw-knob{transform:translateX(18px);background:var(--ink)}
+  .switch:focus-within .sw-track{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+  .toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,16px);background:var(--ink);color:var(--surface);padding:12px 18px;border-radius:999px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;z-index:20;white-space:nowrap}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast .y{color:var(--yellow)}
+  .toast button{font:inherit;color:var(--ink);background:var(--yellow);border:0;border-radius:999px;padding:6px 12px;cursor:pointer;font-size:13px;pointer-events:auto}
+  @keyframes nudge{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .switch.nudge{animation:nudge .5s}
+  body:not(.complete) .sticker{cursor:grab}
+  body:not(.complete) .tab[data-face]{opacity:.45}
+  body:not(.complete) .tab[data-face]:hover{background:transparent;color:var(--ink-2)}
+
+  /* ---------- drawer ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(21,20,10,.18);opacity:0;pointer-events:none;transition:opacity .3s;z-index:8}
+  body.open .scrim{opacity:1;pointer-events:auto}
+  .drawer{
+    position:fixed;top:12px;right:12px;bottom:12px;width:min(460px,calc(100vw - 24px));
+    background:var(--surface);border-radius:24px;box-shadow:var(--shadow-lg);
+    transform:translateX(calc(100% + 24px));transition:transform .36s cubic-bezier(.2,.8,.2,1);
+    z-index:9;display:flex;flex-direction:column;overflow:hidden;
+  }
+  body.open .drawer{transform:none}
+  .dr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:28px 28px 0}
+  .dr-head .eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-2);margin-bottom:6px}
+  .dr-head h2{font-size:28px;font-weight:600;line-height:1.15;letter-spacing:-.02em}
+  .dr-close{flex:none;width:40px;height:40px;border-radius:999px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:grid;place-items:center;color:var(--ink)}
+  .dr-close:hover{background:var(--muted)}
+  .dr-close svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .dr-body{padding:20px 28px 28px;overflow:auto;flex:1}
+  .dr-lead{font-size:17px;line-height:1.55;color:var(--ink-2);margin-bottom:20px}
+  .dr-panel{--c:var(--yellow);background:var(--c);border-radius:24px;padding:20px;margin-bottom:20px}
+  .dr-panel .big{font-size:40px;font-weight:700;line-height:1.05;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .dr-panel .cap{font-size:12px;font-weight:500;color:var(--ink-2);margin-top:4px}
+  .dr-list{display:flex;flex-direction:column;gap:8px}
+  .dr-row{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:12px;background:var(--canvas)}
+  .dr-row .idx{flex:none;width:32px;height:32px;border-radius:999px;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-size:12px;font-weight:600}
+  .dr-row .t{font-size:15px;font-weight:600;line-height:1.3}
+  .dr-row .d{font-size:13px;line-height:1.5;color:var(--ink-2);margin-top:2px}
+  .dr-foot{padding:0 28px 28px;display:flex;gap:8px}
+  .btn{font-family:inherit;font-size:15px;font-weight:600;line-height:1.3;padding:12px 20px;border-radius:999px;border:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+  .btn.primary{background:var(--yellow);color:var(--ink)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--border)}
+  .btn:hover{filter:brightness(.97)}
+
+
+  body.open .stage{transform:translateX(min(-230px, calc(-50vw + 50%)))}
+  body.open .foot .right{opacity:0;pointer-events:none}
+
+  @media (max-width:760px){
+    :root{--size:min(64vmin,300px)}
+    header,.foot{padding:20px}
+    nav a:not(.cta){display:none}
+    .hint{display:none}
+    .tab{font-size:12px;padding:8px 10px}
+    .brand .role{display:none}
+    .foot{flex-direction:column;align-items:stretch}
+    .right{align-items:stretch}
+    body.open .stage{transform:translateY(-18vh) scale(.6)}
+    .drawer{top:auto;left:12px;right:12px;height:62vh;width:auto;transform:translateY(calc(100% + 24px))}
+    .dr-head h2{font-size:22px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="disc">TA</div>
+    <div>
+      <div class="name">Taha Azhar</div>
+      <div class="role">Lead CX / Product Designer · Dubai</div>
+    </div>
+  </div>
+  <nav>
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="cta" href="#contact">Hire me</a>
+  </nav>
+</header>
+
+<div class="stage" id="stage">
+  <div class="cube" id="cube"></div>
+</div>
+
+<div class="foot">
+  <div class="rail" id="tabs">
+    <button class="tab" data-face="experience" style="--c:var(--yellow)"><i class="dot"></i>Experience</button>
+    <button class="tab" data-face="skills" style="--c:var(--sky)"><i class="dot"></i>Skills</button>
+    <button class="tab" data-face="projects" style="--c:#fff"><i class="dot"></i>Projects</button>
+    <button class="tab" data-face="tools" style="--c:var(--green)"><i class="dot"></i>Tools</button>
+    <button class="tab" data-face="education" style="--c:var(--peach-bg)"><i class="dot"></i>Education</button>
+    <button class="tab" data-face="contact" style="--c:var(--coral)"><i class="dot"></i>Contact</button>
+  </div>
+  <div class="right">
+    <div class="hint" id="hint"><b>A real cube</b>It shuffles itself. Flip the switch to solve it —<br>then every tile opens its section.</div>
+    <label class="switch" id="complete">
+      <span class="sw-label" id="sw-label">Complete me</span>
+      <span class="sw-track"><span class="sw-knob"></span></span>
+      <span class="moves" id="moves">0 moves</span>
+    </label>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"><span>Complete the cube first to open a section.</span><button id="toast-btn">Complete me</button></div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dr-head">
+    <div><div class="eyebrow" id="dr-eyebrow"></div><h2 id="dr-title"></h2></div>
+    <button class="dr-close" id="dr-close" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="dr-body" id="dr-body"></div>
+  <div class="dr-foot" id="dr-foot"></div>
+</aside>
+
+
+<script>
+(function(){
+  /* ================= CONTENT (row-major, 3x3 per face) ================= */
+  const ICON = {
+    building:'<svg viewBox="0 0 24 24"><path d="M4 20h16M4 20V8l8-4 8 4v12M9 20v-6h6v6"/></svg>',
+    star:'<svg viewBox="0 0 24 24"><path d="M12 3l2.5 6 6.5.6-5 4.3 1.6 6.4L12 17l-5.6 3.3L8 13.9 3 9.6 9.5 9z"/></svg>',
+    arrow:'<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+    wrench:'<svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L13 18a3 3 0 0 1-4.2 0L4.6 13.8a3 3 0 0 1 0-4.2l6.7-6.7a4 4 0 0 0 3.4 3.4z"/></svg>',
+    cap:'<svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5-10-5zM6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>',
+    chat:'<svg viewBox="0 0 24 24"><path d="M4 6h16v10H8l-4 4V6z"/></svg>'
+  };
+  const T = (k,v,s)=>({k,v,s});
+  const TITLE = (n,v)=>({title:true,k:n,v});
+  const BIG = (k,v)=>({big:true,k,v});
+  const PX = (icon,k)=>({px:true,icon,k});
+
+  const CONTENT = {
+    experience:[
+      BIG('Years','11+'), T('Now','Alpha Data · HHRC','Lead CX / Product Designer'), T('Gov','Diwan Dubai','Enterprise CRM'),
+      T('2019–21','Xische & Co','Senior UX/UI · TAMM'), TITLE('01','Experience'), T('Fintech','Synechron','ADIB onboarding'),
+      T('Sectors','Government','Enterprise · Payments'), PX('building','Lead'), T('Scale','Super-apps','Millions of citizens')
+    ],
+    skills:[
+      T('01','Design Systems','Tokens · components · docs'), T('02','UX Strategy'), PX('star','Craft'),
+      T('03','Bilingual UI','Arabic RTL · English LTR'), TITLE('02','Skills'), T('04','Hi-fi Prototyping'),
+      T('05','Dev Handoff','Specs · tokens · QA'), T('06','Service Design'), T('07','AI-ready Design','Agent-consumable systems')
+    ],
+    projects:[
+      T('Abu Dhabi','TAMM','Government super-app'), T('Dubai','HHRC','Utility management'), T('Banking','ADIB','Digital onboarding'),
+      T('Gov','FAD Visa','Visa workflow system'), TITLE('03','Projects'), T('CRM','Diwan','Reconciliation & payments'),
+      T('System','UTM','Design system'), PX('arrow','Ship'), T('Side','Second Opinion','AI critique tool')
+    ],
+    tools:[
+      T('Design','Figma','Variables · Code Connect'), PX('wrench','Stack'), T('AI','Claude Code','Design agents & skills'),
+      T('Code','HTML · CSS','Prototypes in the browser'), TITLE('04','Tools'), T('Version','GitHub'),
+      T('Motion','Prototyping','Interactive flows'), T('Tokens','Design Tokens','Multi-theme · RTL'), T('Docs','Notion')
+    ],
+    education:[
+      T('Degree','MA Advertising','Bucks New University, UK'), PX('cap','Learn'), T('Next','PMP','In progress'),
+      T('Practice','Accessibility','WCAG-aware delivery'), TITLE('05','Education'), T('Teach','AI Training','Course for office teams'),
+      T('Share','LinkedIn','Design content'), T('Layout','RTL + LTR','Arabic-first interfaces'), T('Mindset','Systems first')
+    ],
+    contact:[
+      T('Web','tahazhar.com'), T('Social','LinkedIn'), PX('chat','Say hi'),
+      T('Base','Dubai, UAE','GMT+4'), TITLE('06','Contact'), T('Status','Open to','Lead / Principal roles'),
+      T('Code','GitHub','tahazhr-afk'), T('Work','Remote','or relocation'), T('Mail','Email','via tahazhar.com')
+    ]
+  };
+
+
+  /* Face definitions in CSS coords: +x right, +y DOWN, +z toward viewer. */
+  const FACES = {
+    experience:{ n:[0,0,1],  cls:'cf-f', pos:(r,c)=>[c-1, r-1, 1] },
+    projects:  { n:[0,0,-1], cls:'cf-b', pos:(r,c)=>[1-c, r-1, -1] },
+    skills:    { n:[1,0,0],  cls:'cf-r', pos:(r,c)=>[1, r-1, 1-c] },
+    tools:     { n:[-1,0,0], cls:'cf-l', pos:(r,c)=>[-1, r-1, c-1] },
+    education: { n:[0,-1,0], cls:'cf-u', pos:(r,c)=>[c-1, -1, r-1] },
+    contact:   { n:[0,1,0],  cls:'cf-d', pos:(r,c)=>[c-1, 1, 1-r] },
+  };
+  const LOCAL_N = {'cf-f':[0,0,1],'cf-b':[0,0,-1],'cf-r':[1,0,0],'cf-l':[-1,0,0],'cf-u':[0,-1,0],'cf-d':[0,1,0]};
+  // camera angles that bring a world-space normal to face the viewer
+  const VIEW_FOR_N = {'0,0,1':{rx:-18,ry:24}, '1,0,0':{rx:-18,ry:-66}, '0,0,-1':{rx:-18,ry:-156}, '-1,0,0':{rx:-18,ry:114}, '0,-1,0':{rx:-108,ry:24}, '0,1,0':{rx:72,ry:24}};
+
+  /* ================= BUILD CUBIES ================= */
+  const cube = document.getElementById('cube');
+  const stage = document.getElementById('stage');
+  const cubies = [];
+  const key = p=>p.join(',');
+  const stickerHTML = (face,d)=>{
+    const cls = ['sticker',face, d.title?'title':'', d.big?'big':'', d.px?'px':''].join(' ');
+    if (d.px) return `<div class="${cls}"><div class="disc">${ICON[d.icon]}</div><div class="k">${d.k}</div></div>`;
+    return `<div class="${cls}"><div class="k">${d.k}</div><div class="v">${d.v}${d.s?`<small>${d.s}</small>`:''}</div></div>`;
+  };
+  for (let x=-1;x<=1;x++) for (let y=-1;y<=1;y++) for (let z=-1;z<=1;z++){
+    if (!x && !y && !z) continue;
+    const el = document.createElement('div'); el.className='cubie';
+    const faces = {};
+    for (const cls in LOCAL_N){ const f=document.createElement('div'); f.className='cf '+cls+' inner'; el.appendChild(f); faces[cls]=f; }
+    cube.appendChild(el);
+    cubies.push({el,pos:[x,y,z],home:[x,y,z],m:[[1,0,0],[0,1,0],[0,0,1]],faces,title:null});
+  }
+  const byPos = {}; cubies.forEach(c=>byPos[key(c.pos)]=c);
+  for (const face in CONTENT){
+    const F = FACES[face];
+    CONTENT[face].forEach((d,i)=>{
+      const r=Math.floor(i/3), c=i%3;
+      const cb = byPos[key(F.pos(r,c))];
+      const fe = cb.faces[F.cls];
+      fe.classList.remove('inner'); fe.innerHTML = stickerHTML(face,d);
+      fe.firstChild.dataset.local = F.cls; fe.firstChild.dataset.section = face;
+      if (d.title) cb.title = {face, local:F.cls};
+    });
+  }
+
+  /* ================= MATH ================= */
+  const mul=(A,B)=>A.map((r,i)=>B[0].map((_,j)=>r.reduce((s,_,k)=>s+A[i][k]*B[k][j],0)));
+  const mv=(A,v)=>A.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]);
+  const ROT={ x:[[1,0,0],[0,0,-1],[0,1,0]], y:[[0,0,1],[0,1,0],[-1,0,0]], z:[[0,-1,0],[1,0,0],[0,0,1]] };
+  const inv=M=>M[0].map((_,j)=>M.map(r=>r[j]));
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const matrix3d=M=>`matrix3d(${M[0][0]},${M[1][0]},${M[2][0]},0,${M[0][1]},${M[1][1]},${M[2][1]},0,${M[0][2]},${M[1][2]},${M[2][2]},0,0,0,0,1)`;
+  function paint(c,pre=''){
+    c.el.style.transform=`${pre} translate3d(calc(${c.pos[0]} * var(--u)),calc(${c.pos[1]} * var(--u)),calc(${c.pos[2]} * var(--u))) ${matrix3d(c.m)}`;
+  }
+  cubies.forEach(c=>paint(c));
+
+  /* ================= TWIST ENGINE ================= */
+  let twisting=false, history=[], moves=0, openFace=null, twistDrag=null;
+  const movesEl=document.getElementById('moves');
+  function twist(axis, layer, dir, dur=420, record=true){
+    return new Promise(res=>{
+      twisting=true;
+      const ai={x:0,y:1,z:2}[axis];
+      const group=cubies.filter(c=>c.pos[ai]===layer);
+      const t0=performance.now();
+      const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      (function step(now){
+        const t=Math.min(1,(now-t0)/dur);
+        group.forEach(c=>paint(c,`rotate${axis.toUpperCase()}(${dir*90*ease(t)}deg)`));
+        if(t<1) requestAnimationFrame(step);
+        else{
+          let R=ROT[axis]; if(dir<0) R=inv(R);
+          group.forEach(c=>{ c.pos=mv(R,c.pos).map(Math.round); c.m=mul(R,c.m).map(r=>r.map(Math.round)); paint(c); });
+          twisting=false;
+          if(record){ history.push([axis,layer,dir]); moves++; }
+          movesEl.textContent=moves+' move'+(moves===1?'':'s');
+          res();
+        }
+      })(t0);
+    });
+  }
+
+  // ---- self-shuffle loop (like the reference: the cube keeps twisting on its own)
+  let autoTwist=true, lastAuto=0, lastMove=null;
+  function randomMove(){
+    const axes=['x','y','z']; let m;
+    do { m=[axes[Math.random()*3|0], (Math.random()*3|0)-1, Math.random()<.5?1:-1]; }
+    while (lastMove && m[0]===lastMove[0] && m[1]===lastMove[1] && m[2]===-lastMove[2]); // never undo the last move
+    lastMove=m; return m;
+  }
+  // ---- locked-state message
+  const toast=document.getElementById('toast'), sw=document.getElementById('complete');
+  let toastTimer=0;
+  function lockedMessage(){
+    toast.classList.add('show'); sw.classList.remove('nudge'); void sw.offsetWidth; sw.classList.add('nudge');
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>toast.classList.remove('show'),2800);
+  }
+  document.getElementById('toast-btn').addEventListener('click',()=>{ toast.classList.remove('show'); sw.click(); });
+
+  // ---- "Complete me": solve the cube; only then are the sections clickable
+  let complete=false, solving=false;
+  const swLabel=document.getElementById('sw-label'), hint=document.getElementById('hint');
+  async function solve(){
+    solving=true;
+    while(history.length){ const [a,l,d]=history.pop(); await twist(a,l,-d,history.length>12?80:150,false); moves=Math.max(0,moves-1); }
+    movesEl.textContent='0 moves'; solving=false; lastMove=null;
+  }
+  document.getElementById('complete').addEventListener('click', async e=>{
+    e.preventDefault();
+    if(solving) return;
+    if(!complete){
+      autoTwist=false; swLabel.textContent='Solving…';
+      // wait for an in-flight twist, then unwind
+      while(twisting) await new Promise(r=>setTimeout(r,30));
+      await solve();
+      complete=true; document.body.classList.add('complete');
+      swLabel.textContent='Complete'; hint.innerHTML='<b>Solved</b>Click any tile — or a tab — to open that section.<br>Flip the switch again to shuffle.';
+    } else {
+      complete=false; document.body.classList.remove('complete'); if(openFace) closeDrawer();
+      autoTwist=true; lastAuto=0; swLabel.textContent='Complete me';
+      hint.innerHTML='<b>A real cube</b>It shuffles itself. Flip the switch to solve it —<br>then every tile opens its section.';
+    }
+  });
+
+  /* ================= WHOLE-CUBE ROTATION ================= */
+  const tabs=document.getElementById('tabs');
+  let rx=-22, ry=32, vx=0.05, vy=0.18, target=null, dragging=false, lastX=0,lastY=0,dvx=0,dvy=0, resumeAt=0;
+  const norm=a=>{a%=360; if(a>180)a-=360; if(a<-180)a+=360; return a;};
+  const shortest=(f,t)=>norm(t-f);
+  const rad=d=>d*Math.PI/180;
+  function toScreen(v){
+    const cy=Math.cos(rad(ry)), sy=Math.sin(rad(ry)), cx=Math.cos(rad(rx)), sx=Math.sin(rad(rx));
+    const x1=v[0]*cy+v[2]*sy, z1=-v[0]*sy+v[2]*cy, y1=v[1];
+    return [x1, y1*cx-z1*sx, y1*sx+z1*cx];
+  }
+  (function frame(){
+    const now=performance.now();
+    if(!dragging && !twistDrag){
+      if(target){
+        const dx=shortest(rx,target.rx), dy=shortest(ry,target.ry);
+        rx+=dx*0.09; ry+=dy*0.09;
+        if(Math.abs(dx)<0.05&&Math.abs(dy)<0.05){rx=target.rx;ry=target.ry;target=null;}
+      } else if(now<resumeAt){ if(!openFace){rx+=dvx; ry+=dvy; dvx*=0.94; dvy*=0.94;} }
+      else { rx+=vx; ry+=vy; }
+    }
+    rx=norm(rx); ry=norm(ry);
+    cube.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
+    // self-shuffle tick
+    if(autoTwist && !twisting && !solving && !openFace && !twistDrag && !dragging && now-lastAuto>1500){
+      lastAuto=now; twist(...randomMove());
+    }
+    requestAnimationFrame(frame);
+  })();
+
+  const DETAIL = {
+    experience:{ eyebrow:'01 · Experience', title:'Eleven years designing products people are required to use.',
+      lead:'Government portals, bank onboarding, utility platforms. Work where the user did not choose the product — so the design has to earn its patience.',
+      panel:{c:'var(--yellow)', big:'11+', cap:'years in product and CX design'},
+      rows:[['Alpha Data · HHRC','Lead CX / Product Designer · Dubai Government utility management. Building an enterprise, AI-consumable design system.'],
+            ['Diwan Dubai','Enterprise CRM — account management, reconciliation and payments on a government design system.'],
+            ['Xische & Co · 2019–2021','Senior UX/UI Designer on TAMM, the Abu Dhabi government super-app.'],
+            ['Synechron · ADIB','Digital onboarding for retail banking.']],
+      cta:[['Download CV','#'],['View work','#work']] },
+    skills:{ eyebrow:'02 · Skills', title:'Systems thinking, delivered at pixel level.',
+      lead:'I work end to end: from service strategy down to the token that sets a button radius — and the handoff that gets it built right.',
+      panel:{c:'var(--sky)', big:'7', cap:'core disciplines'},
+      rows:[['Design systems','Tokens, components, documentation, governance. Built for humans and AI agents to consume.'],
+            ['UX strategy','Journey mapping, service blueprints, prioritisation with product and engineering.'],
+            ['Bilingual UI','Arabic RTL and English LTR from a single component set. Mirroring, type scales, numerals.'],
+            ['High-fidelity prototyping','Interactive flows that stand in for the real thing in stakeholder reviews.'],
+            ['Developer handoff','Specs, states, edge cases, tokens. Fewer round-trips.'],
+            ['Service design','Cross-channel experiences for citizens and enterprise users.'],
+            ['AI-ready design','Design systems and workflows structured so agents can build on them.']],
+      cta:[['See projects','#projects']] },
+    projects:{ eyebrow:'03 · Projects', title:'Selected work.',
+      lead:'Products across government, banking and utilities — most serving hundreds of thousands of users.',
+      panel:null,
+      rows:[['TAMM','Abu Dhabi government super-app. Senior UX/UI at Xische & Co.'],
+            ['HHRC','Dubai Government utility management. Design system and web/mobile apps.'],
+            ['ADIB','Retail banking digital onboarding with Synechron.'],
+            ['FAD Visa Management','Government CRM-style visa workflow system.'],
+            ['Diwan CRM','Account list, reconciliation and payments screens.'],
+            ['UTM','Utility Management System and its derived design system.'],
+            ['Second Opinion','Side project — an AI design-critique tool, deployed publicly.']],
+      cta:[['Full portfolio','https://tahazhar.com']] },
+    tools:{ eyebrow:'04 · Tools', title:'The stack.',
+      lead:'Figma for the system of record, Claude for the heavy lifting, the browser for anything that needs to feel real.',
+      panel:{c:'var(--green)', big:'Figma + Claude', cap:'daily drivers'},
+      rows:[['Figma','Variables, Code Connect, component libraries.'],
+            ['Claude Code','Custom design agents and skills — BRD analysis, UX architecture, UI build.'],
+            ['HTML · CSS','Prototypes built in the browser, like this page.'],
+            ['Design tokens','Multi-theme, RTL-aware token sets.'],
+            ['GitHub','Versioned design-system source.'],
+            ['Notion','Documentation and planning.']],
+      cta:[] },
+    education:{ eyebrow:'05 · Education', title:'Trained in advertising. Practising in systems.',
+      lead:'A background in communication shapes how I design: every screen has to say one thing clearly.',
+      panel:{c:'var(--peach-bg)', big:'MA', cap:'Advertising · Bucks New University, UK'},
+      rows:[['PMP certification','In progress.'],
+            ['AI training course','Co-building a course to train office teams on AI.'],
+            ['Accessibility','WCAG-aware delivery across government products.'],
+            ['Sharing','Regular design content on LinkedIn.']],
+      cta:[] },
+    contact:{ eyebrow:'06 · Contact', title:'Say hi.',
+      lead:'Based in Dubai (GMT+4). Open to lead and principal design roles — remote or with relocation.',
+      panel:{c:'var(--coral)', big:'Open', cap:'to new roles'},
+      rows:[['Website','tahazhar.com'],['LinkedIn','Design content and updates'],['GitHub','tahazhr-afk'],['Email','via tahazhar.com']],
+      cta:[['Visit tahazhar.com','https://tahazhar.com'],['LinkedIn','https://www.linkedin.com']] },
+  };
+
+  const drawer=document.getElementById('drawer'), scrim=document.getElementById('scrim');
+  function openDrawer(face, normal){
+    const d=DETAIL[face]; if(!d) return;
+    openFace=face;
+    tabs.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.face===face));
+    document.getElementById('dr-eyebrow').textContent=d.eyebrow;
+    document.getElementById('dr-title').textContent=d.title;
+    document.getElementById('dr-body').innerHTML =
+      `<p class="dr-lead">${d.lead}</p>` +
+      (d.panel?`<div class="dr-panel" style="--c:${d.panel.c}"><div class="big">${d.panel.big}</div><div class="cap">${d.panel.cap}</div></div>`:'') +
+      `<div class="dr-list">${d.rows.map((r,i)=>`<div class="dr-row"><div class="idx">${String(i+1).padStart(2,'0')}</div><div><div class="t">${r[0]}</div><div class="d">${r[1]}</div></div></div>`).join('')}</div>`;
+    document.getElementById('dr-foot').innerHTML = d.cta.map(([t,h],i)=>`<a class="btn ${i?'ghost':'primary'}" href="${h}" ${h.startsWith('http')?'target="_blank" rel="noopener"':''}>${t}</a>`).join('');
+    document.body.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+    if(normal){ const v=VIEW_FOR_N[key(normal)]; if(v){ target={rx:v.rx,ry:v.ry}; } }
+    dvx=dvy=0; resumeAt=Infinity;
+  }
+  function closeDrawer(){
+    openFace=null; document.body.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
+    tabs.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    resumeAt=performance.now()+800; lastAuto=performance.now();
+  }
+  scrim.addEventListener('click',closeDrawer);
+  document.getElementById('dr-close').addEventListener('click',closeDrawer);
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&openFace) closeDrawer(); });
+
+  /* ================= POINTER: click opens · drag tile twists · drag background spins ================= */
+  let downX=0, downY=0, downSticker=null;
+  stage.addEventListener('pointerdown', e=>{
+    stage.setPointerCapture(e.pointerId);
+    downX=e.clientX; downY=e.clientY; target=null; dvx=dvy=0;
+    const st=e.target.closest('.sticker'); downSticker=st;
+    if(st){
+      const c=cubies.find(k=>k.el===st.closest('.cubie'));
+      twistDrag={c, n:mv(c.m, LOCAL_N[st.dataset.local]), moved:false};
+    } else { dragging=true; lastX=e.clientX; lastY=e.clientY; stage.classList.add('dragging'); }
+  });
+  stage.addEventListener('pointermove', e=>{
+    if(twistDrag){
+      const dx=e.clientX-downX, dy=e.clientY-downY;
+      if(Math.hypot(dx,dy)<14 || twisting) return;
+      const {c,n}=twistDrag; twistDrag=null; downSticker=null;
+      const tangents=[[1,0,0],[0,1,0],[0,0,1]].filter((_,i)=>n[i]===0);
+      let best=null,bs=0;
+      tangents.forEach(t=>{ const s=toScreen(t); const len=Math.hypot(s[0],s[1])||1; const sc=(dx*s[0]+dy*s[1])/len; if(Math.abs(sc)>Math.abs(bs)){bs=sc;best=t;} });
+      const a=cross(n,best), ai=a.findIndex(v=>v!==0);
+      lastAuto=performance.now()+2500; resumeAt=performance.now()+3000;
+      twist('xyz'[ai], c.pos[ai], Math.sign(a[ai])*Math.sign(bs), 300);
+      return;
+    }
+    if(!dragging) return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY; lastX=e.clientX; lastY=e.clientY;
+    dvy=dx*0.4; dvx=-dy*0.4; ry+=dvy; rx+=dvx;
+  });
+  const end=e=>{
+    const moved=e && Math.hypot(e.clientX-downX,e.clientY-downY)>6;
+    if(twistDrag && downSticker && !moved && !complete){ twistDrag=null; downSticker=null; lockedMessage(); return; }
+    if(twistDrag && downSticker && !moved && complete){
+      const st=downSticker, c=twistDrag.c;
+      twistDrag=null; downSticker=null;
+      openDrawer(st.dataset.section, mv(c.m, LOCAL_N[st.dataset.local]));
+      return;
+    }
+    twistDrag=null; downSticker=null;
+    if(dragging){ dragging=false; stage.classList.remove('dragging'); if(!openFace) resumeAt=performance.now()+2600; }
+  };
+  stage.addEventListener('pointerup',end); stage.addEventListener('pointercancel',end);
+
+  /* ================= TABS + KEYS ================= */
+  tabs.addEventListener('click', e=>{
+    const b=e.target.closest('.tab[data-face]'); if(!b) return;
+    if(!complete){ lockedMessage(); return; }
+    const face=b.dataset.face;
+    // find where this section's title tile currently is, and turn the cube to it
+    const c=cubies.find(k=>k.title&&k.title.face===face);
+    const n=c?mv(c.m, LOCAL_N[c.title.local]):null;
+    openDrawer(face, n);
+  });
+  window.addEventListener('keydown', e=>{
+    if(e.key>='1'&&e.key<='6'){ tabs.querySelectorAll('.tab[data-face]')[+e.key-1].click(); }
+    const nudge=(a,b)=>{rx+=a;ry+=b;resumeAt=performance.now()+3000;target=null;};
+    if(e.key==='ArrowLeft')nudge(0,-15); if(e.key==='ArrowRight')nudge(0,15);
+    if(e.key==='ArrowUp')nudge(-15,0);  if(e.key==='ArrowDown')nudge(15,0);
+  });
+})();
+</script>
+</body>
+</html>
