@@ -112,6 +112,21 @@
   body:not(.complete) .tab[data-face]{opacity:.45}
   body:not(.complete) .tab[data-face]:hover{background:transparent;color:var(--ink-2)}
 
+  /* ---------- comment FAB + mode ---------- */
+  .fab{position:relative;width:40px;height:40px;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid var(--border);cursor:pointer;display:grid;place-items:center;margin:0 4px;transition:background .15s,color .15s}
+  .fab:hover{background:var(--muted)}
+  .fab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .fab .tip{position:absolute;top:48px;left:50%;transform:translateX(-50%);background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid var(--border);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+  .fab:hover .tip{opacity:1}
+  body.commenting .fab{background:var(--ink);color:var(--yellow);border-color:var(--ink)}
+  body.commenting .stage, body.commenting .sticker, body.commenting header, body.commenting .foot{cursor:crosshair !important}
+  .cm-banner{position:fixed;top:92px;left:50%;transform:translate(-50%,-8px);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:12;white-space:nowrap}
+  body.commenting .cm-banner{opacity:1;transform:translate(-50%,0)}
+  .cm-banner kbd{font:inherit;font-size:11px;background:#33322B;padding:2px 6px;border-radius:6px}
+  .cm-banner .pin{width:8px;height:8px;border-radius:999px;background:var(--yellow)}
+  .fb-frame{width:100%;height:100%;border:0;border-radius:12px;background:var(--canvas)}
+  .dr-body.fb{padding:12px 28px 28px;display:flex}
+
   /* ---------- drawer ---------- */
   .scrim{position:fixed;inset:0;background:rgba(21,20,10,.18);opacity:0;pointer-events:none;transition:opacity .3s;z-index:8}
   body.open .scrim{opacity:1;pointer-events:auto}
@@ -177,6 +192,7 @@
     <a href="#work">Work</a>
     <a href="#about">About</a>
     <a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn</a>
+    <button class="fab" id="fab" aria-label="Leave a comment" title="Leave a comment"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 9h8M8 12h5"/></svg><span class="tip">Comment</span></button>
     <a class="cta" href="#contact">Hire me</a>
   </nav>
 </header>
@@ -204,6 +220,7 @@
   </div>
 </div>
 
+<div class="cm-banner" id="cm-banner"><span class="pin"></span>Click anywhere to pin a comment <kbd>Esc</kbd> to cancel</div>
 <div class="toast" id="toast" role="status"><span>Complete the cube first to open a section.</span><button id="toast-btn">Complete me</button></div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
@@ -493,7 +510,7 @@
     dvx=dvy=0; resumeAt=Infinity;
   }
   function closeDrawer(){
-    openFace=null; document.body.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
+    openFace=null; document.body.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); document.getElementById('dr-body').classList.remove('fb');
     tabs.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     resumeAt=performance.now()+800; lastAuto=performance.now();
   }
@@ -504,6 +521,7 @@
   /* ================= POINTER: click opens · drag tile twists · drag background spins ================= */
   let downX=0, downY=0, downSticker=null;
   stage.addEventListener('pointerdown', e=>{
+    if(commenting) return;
     stage.setPointerCapture(e.pointerId);
     downX=e.clientX; downY=e.clientY; target=null; dvx=dvy=0;
     const st=e.target.closest('.sticker'); downSticker=st;
@@ -543,9 +561,41 @@
   };
   stage.addEventListener('pointerup',end); stage.addEventListener('pointercancel',end);
 
+  /* ================= COMMENTS (Figma-style pins) ================= */
+  // On claude.ai the shell renders pinned threads; the FAB enters comment mode and the next click opens
+  // the shell's composer on that element. Elsewhere (GitHub Pages) the FAB opens the Notion feedback form.
+  const FEEDBACK_FORM_URL = ''; // Notion form public link — set once the form is published
+  const fab=document.getElementById('fab');
+  let commentsApi=null, commenting=false;
+  (async()=>{ try{ if(window.claude&&claude.use){ commentsApi=await claude.use('comments'); } }catch(e){ commentsApi=null; } })();
+  function setCommenting(on){ commenting=on; document.body.classList.toggle('commenting',on); }
+  fab.addEventListener('click',()=>{
+    if(commentsApi){ setCommenting(!commenting); return; }
+    // fallback: feedback form in the drawer
+    openFace='feedback';
+    document.getElementById('dr-eyebrow').textContent='Feedback';
+    document.getElementById('dr-title').textContent='Leave a comment';
+    const body=document.getElementById('dr-body'); body.classList.add('fb');
+    body.innerHTML = FEEDBACK_FORM_URL
+      ? `<iframe class="fb-frame" src="${FEEDBACK_FORM_URL}" title="Feedback form" loading="lazy"></iframe>`
+      : `<div><p class="dr-lead">Comments on this page land straight in my Notion. The form is being connected — in the meantime, open the review copy on claude.ai and pin a comment anywhere on it.</p><a class="btn primary" href="https://claude.ai/artifact/XDGXa5zEsRkeVjwUqM6Egm" target="_blank" rel="noopener">Open review copy</a></div>`;
+    document.getElementById('dr-foot').innerHTML='';
+    document.body.classList.add('open'); drawer.setAttribute('aria-hidden','false'); resumeAt=Infinity;
+  });
+  // in comment mode, a click (not a drag) anywhere opens the composer at that element
+  document.addEventListener('click', async e=>{
+    if(!commenting||!commentsApi) return;
+    if(e.target.closest('#fab')) return;
+    e.preventDefault(); e.stopPropagation();
+    const el = e.target.closest('.sticker, .tab, .switch, nav a, .brand, .hint') || e.target;
+    try{ const r=await commentsApi.openComposer({element:el}); if(r&&r.opened) setCommenting(false); }
+    catch(err){ setCommenting(false); if(err&&err.code==='unavailable'){ fab.style.display='none'; } }
+  }, true);
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&commenting) setCommenting(false); });
+
   /* ================= TABS + KEYS ================= */
   tabs.addEventListener('click', e=>{
-    const b=e.target.closest('.tab[data-face]'); if(!b) return;
+    const b=e.target.closest('.tab[data-face]'); if(!b||commenting) return;
     if(!complete){ lockedMessage(); return; }
     const face=b.dataset.face;
     // find where this section's title tile currently is, and turn the cube to it
