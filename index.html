@@ -75,12 +75,12 @@
   .sticker.title::after{opacity:.5}
   .sticker.title .k{color:var(--c);opacity:.6}
   .sticker.title .v{font-size:calc(var(--size)*.036);line-height:1.1;letter-spacing:-.02em}
-  .sticker.projects.title{color:var(--yellow);box-shadow:inset 0 0 0 3px var(--yellow)}
-  .sticker.projects.title .k{color:var(--yellow)}
+  .sticker.projects.title{color:var(--surface);box-shadow:inset 0 0 0 3px var(--surface)}
+  .sticker.projects.title .k{color:var(--surface)}
   .sticker.px{justify-content:center;align-items:center}
   .sticker.px .disc{width:calc(var(--size)*.12);height:calc(var(--size)*.12);border-radius:999px;background:var(--ink);display:grid;place-items:center}
   .sticker.px .disc svg{width:50%;height:50%;stroke:var(--c);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .sticker.projects.px .disc svg{stroke:var(--yellow)}
+  .sticker.projects.px .disc svg{stroke:var(--surface)}
   .sticker.px .k{position:absolute;left:calc(var(--size)*.026);bottom:calc(var(--size)*.018);margin:0}
 
   /* ---------- footer controls ---------- */
@@ -112,20 +112,33 @@
   body:not(.complete) .tab[data-face]{opacity:.45}
   body:not(.complete) .tab[data-face]:hover{background:transparent;color:var(--ink-2)}
 
-  /* ---------- comment FAB + mode ---------- */
+  /* ---------- comment icon + composer ---------- */
   .fab{position:relative;width:40px;height:40px;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid var(--border);cursor:pointer;display:grid;place-items:center;margin:0 4px;transition:background .15s,color .15s}
   .fab:hover{background:var(--muted)}
   .fab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .fab .tip{position:absolute;top:48px;left:50%;transform:translateX(-50%);background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid var(--border);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
-  .fab:hover .tip{opacity:1}
-  body.commenting .fab{background:var(--ink);color:var(--yellow);border-color:var(--ink)}
-  body.commenting .stage, body.commenting .sticker, body.commenting header, body.commenting .foot{cursor:crosshair !important}
-  .cm-banner{position:fixed;top:92px;left:50%;transform:translate(-50%,-8px);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:12;white-space:nowrap}
-  body.commenting .cm-banner{opacity:1;transform:translate(-50%,0)}
-  .cm-banner kbd{font:inherit;font-size:11px;background:#33322B;padding:2px 6px;border-radius:6px}
-  .cm-banner .pin{width:8px;height:8px;border-radius:999px;background:var(--yellow)}
-  .fb-frame{width:100%;height:100%;border:0;border-radius:12px;background:var(--canvas)}
-  .dr-body.fb{padding:12px 28px 28px;display:flex}
+  body.composing .fab{background:var(--ink);color:var(--yellow);border-color:var(--ink)}
+  .composer{position:fixed;top:84px;right:40px;width:360px;background:var(--surface);border-radius:24px;box-shadow:var(--shadow-lg);padding:20px;z-index:14;opacity:0;pointer-events:none;transform:translateY(-8px) scale(.98);transition:opacity .2s,transform .2s;transform-origin:top right}
+  body.composing .composer{opacity:1;pointer-events:auto;transform:none}
+  .composer::before{content:"";position:absolute;top:-7px;right:92px;width:14px;height:14px;background:var(--surface);transform:rotate(45deg);border-radius:3px}
+  .composer h3{font-size:18px;font-weight:600;letter-spacing:-.01em;line-height:1.3;margin-bottom:2px}
+  .composer p{font-size:13px;color:var(--ink-2);margin-bottom:14px}
+  .composer label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-2);margin:10px 0 6px}
+  .composer input,.composer textarea,.composer select{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--canvas);border:1px solid var(--border);border-radius:8px;padding:11px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
+  .composer input:focus,.composer textarea:focus,.composer select:focus{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
+  .composer textarea{min-height:110px;resize:vertical;line-height:1.5}
+  .composer .row{display:flex;gap:8px}
+  .composer .row>*{flex:1}
+  .composer .acts{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+  .composer .count{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+  .composer .btn{padding:10px 18px;font-size:14px}
+  .composer .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .composer .ok{display:none;text-align:center;padding:12px 0 4px}
+  .composer .ok .disc{width:48px;height:48px;border-radius:999px;background:var(--yellow);display:grid;place-items:center;margin:0 auto 12px}
+  .composer .ok .disc svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+  .composer.sent form{display:none}.composer.sent .ok{display:block}
+  .composer .err{display:none;font-size:13px;color:#C8312B;margin-top:8px}
+  .composer.error .err{display:block}
+  @media (max-width:760px){ .composer{left:12px;right:12px;width:auto;top:76px} .composer::before{right:120px} }
 
   /* ---------- drawer ---------- */
   .scrim{position:fixed;inset:0;background:rgba(21,20,10,.18);opacity:0;pointer-events:none;transition:opacity .3s;z-index:8}
@@ -220,7 +233,23 @@
   </div>
 </div>
 
-<div class="cm-banner" id="cm-banner"><span class="pin"></span>Click anywhere to pin a comment <kbd>Esc</kbd> to cancel</div>
+<div class="composer" id="composer" role="dialog" aria-label="Leave a comment">
+  <form id="cform" novalidate>
+    <h3>Leave a comment</h3>
+    <p>Goes straight to Taha. Takes ten seconds.</p>
+    <div class="row">
+      <div><label for="c-name">Name</label><input id="c-name" name="name" type="text" placeholder="Your name" autocomplete="name" required></div>
+      <div><label for="c-section">About</label><select id="c-section" name="section"><option>Overall</option><option>Cube &amp; animation</option><option>Experience</option><option>Skills</option><option>Projects</option><option>Tools</option><option>Education</option><option>Contact</option><option>Mobile</option></select></div>
+    </div>
+    <label for="c-text">Comment</label>
+    <textarea id="c-text" name="comment" maxlength="1500" placeholder="What works, what doesn’t, what you’d change…" required></textarea>
+    <label for="c-email">Email <span style="font-weight:500;text-transform:none;letter-spacing:0">(optional, if you want a reply)</span></label>
+    <input id="c-email" name="email" type="email" placeholder="you@example.com" autocomplete="email">
+    <div class="err" id="c-err">Couldn’t send that. Try again in a moment.</div>
+    <div class="acts"><span class="count" id="c-count">0 / 1500</span><button class="btn primary" id="c-send" type="submit">Send comment</button></div>
+  </form>
+  <div class="ok"><div class="disc"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></div><h3>Sent. Thank you.</h3><p>I read every one.</p><button class="btn ghost" id="c-again" type="button">Write another</button></div>
+</div>
 <div class="toast" id="toast" role="status"><span>Complete the cube first to open a section.</span><button id="toast-btn">Complete me</button></div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
@@ -521,7 +550,6 @@
   /* ================= POINTER: click opens · drag tile twists · drag background spins ================= */
   let downX=0, downY=0, downSticker=null;
   stage.addEventListener('pointerdown', e=>{
-    if(commenting) return;
     stage.setPointerCapture(e.pointerId);
     downX=e.clientX; downY=e.clientY; target=null; dvx=dvy=0;
     const st=e.target.closest('.sticker'); downSticker=st;
@@ -561,41 +589,42 @@
   };
   stage.addEventListener('pointerup',end); stage.addEventListener('pointercancel',end);
 
-  /* ================= COMMENTS (Figma-style pins) ================= */
-  // On claude.ai the shell renders pinned threads; the FAB enters comment mode and the next click opens
-  // the shell's composer on that element. Elsewhere (GitHub Pages) the FAB opens the Notion feedback form.
-  const FEEDBACK_FORM_URL = ''; // Notion form public link — set once the form is published
-  const fab=document.getElementById('fab');
-  let commentsApi=null, commenting=false;
-  (async()=>{ try{ if(window.claude&&claude.use){ commentsApi=await claude.use('comments'); } }catch(e){ commentsApi=null; } })();
-  function setCommenting(on){ commenting=on; document.body.classList.toggle('commenting',on); }
-  fab.addEventListener('click',()=>{
-    if(commentsApi){ setCommenting(!commenting); return; }
-    // fallback: feedback form in the drawer
-    openFace='feedback';
-    document.getElementById('dr-eyebrow').textContent='Feedback';
-    document.getElementById('dr-title').textContent='Leave a comment';
-    const body=document.getElementById('dr-body'); body.classList.add('fb');
-    body.innerHTML = FEEDBACK_FORM_URL
-      ? `<iframe class="fb-frame" src="${FEEDBACK_FORM_URL}" title="Feedback form" loading="lazy"></iframe>`
-      : `<div><p class="dr-lead">Comments on this page land straight in my Notion. The form is being connected — in the meantime, open the review copy on claude.ai and pin a comment anywhere on it.</p><a class="btn primary" href="https://claude.ai/artifact/XDGXa5zEsRkeVjwUqM6Egm" target="_blank" rel="noopener">Open review copy</a></div>`;
-    document.getElementById('dr-foot').innerHTML='';
-    document.body.classList.add('open'); drawer.setAttribute('aria-hidden','false'); resumeAt=Infinity;
+  /* ================= COMMENTS ================= */
+  // The composer posts to a FormSubmit relay that emails Taha (the id is an alias, not an address).
+  const FEEDBACK_ENDPOINT = 'https://formsubmit.co/ajax/92a8e8807a4289dbc8a50375fbdb49ba';
+  const fab=document.getElementById('fab'), composer=document.getElementById('composer'), cform=document.getElementById('cform');
+  const ctext=document.getElementById('c-text'), ccount=document.getElementById('c-count'), csend=document.getElementById('c-send');
+  function setComposing(on){ document.body.classList.toggle('composing',on); if(on){ composer.classList.remove('sent','error'); setTimeout(()=>document.getElementById('c-name').focus(),60);} }
+  fab.addEventListener('click',()=>setComposing(!document.body.classList.contains('composing')));
+  document.addEventListener('pointerdown',e=>{ if(document.body.classList.contains('composing') && !e.target.closest('#composer,#fab')) setComposing(false); });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.body.classList.contains('composing')) setComposing(false); });
+  ctext.addEventListener('input',()=>{ ccount.textContent=ctext.value.length+' / 1500'; });
+  document.getElementById('c-again').addEventListener('click',()=>{ cform.reset(); ccount.textContent='0 / 1500'; composer.classList.remove('sent'); });
+  cform.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const fd=new FormData(cform);
+    const name=(fd.get('name')||'').trim(), comment=(fd.get('comment')||'').trim();
+    if(!name||!comment){ (name?ctext:document.getElementById('c-name')).focus(); return; }
+    composer.classList.remove('error'); csend.disabled=true; csend.textContent='Sending…';
+    const section=fd.get('section'), email=(fd.get('email')||'').trim();
+    const payload={ name, section, message:comment, page:location.href, _subject:'Portfolio comment from '+name+' · '+section, _template:'table', _captcha:'false' };
+    if(email) payload.email=email;
+    try{
+      const r=await fetch(FEEDBACK_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok || String(j.success)==='false') throw new Error('relay '+r.status);
+      composer.classList.add('sent');
+    }catch(err){
+      const errEl=document.getElementById('c-err');
+      if(window.claude){ errEl.innerHTML='This preview can\u2019t send mail. <a href="https://tahazhr-afk.github.io/portfolio-cube/" target="_blank" rel="noopener" style="color:inherit;font-weight:600">Comment on the live site \u2192</a>'; }
+      composer.classList.add('error');
+    }
+    csend.disabled=false; csend.textContent='Send comment';
   });
-  // in comment mode, a click (not a drag) anywhere opens the composer at that element
-  document.addEventListener('click', async e=>{
-    if(!commenting||!commentsApi) return;
-    if(e.target.closest('#fab')) return;
-    e.preventDefault(); e.stopPropagation();
-    const el = e.target.closest('.sticker, .tab, .switch, nav a, .brand, .hint') || e.target;
-    try{ const r=await commentsApi.openComposer({element:el}); if(r&&r.opened) setCommenting(false); }
-    catch(err){ setCommenting(false); if(err&&err.code==='unavailable'){ fab.style.display='none'; } }
-  }, true);
-  window.addEventListener('keydown',e=>{ if(e.key==='Escape'&&commenting) setCommenting(false); });
 
   /* ================= TABS + KEYS ================= */
   tabs.addEventListener('click', e=>{
-    const b=e.target.closest('.tab[data-face]'); if(!b||commenting) return;
+    const b=e.target.closest('.tab[data-face]'); if(!b) return;
     if(!complete){ lockedMessage(); return; }
     const face=b.dataset.face;
     // find where this section's title tile currently is, and turn the cube to it
