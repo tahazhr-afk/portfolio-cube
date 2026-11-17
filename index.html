@@ -393,7 +393,8 @@
   }
 
   // ---- self-shuffle loop (like the reference: the cube keeps twisting on its own)
-  let autoTwist=true, lastAuto=0, lastMove=null;
+  let autoTwist=true, lastAuto=0, lastMove=null, autoHold=false;
+  function releaseTab(){ if(!autoHold) return; autoHold=false; resumeAt=performance.now()+800; lastAuto=performance.now(); document.querySelectorAll('#tabs .tab').forEach(t=>t.classList.remove('active')); }
   function randomMove(){
     const axes=['x','y','z']; let m;
     do { m=[axes[Math.random()*3|0], (Math.random()*3|0)-1, Math.random()<.5?1:-1]; }
@@ -429,7 +430,7 @@
       swLabel.textContent='Complete'; hint.innerHTML='<b>Solved</b>Click any tile — or a tab — to open that section.<br>Flip the switch again to shuffle.';
     } else {
       complete=false; document.body.classList.remove('complete'); if(openFace) closeDrawer();
-      autoTwist=true; lastAuto=0; swLabel.textContent='Complete me';
+      releaseTab(); autoTwist=true; lastAuto=0; swLabel.textContent='Complete me';
       hint.innerHTML='<b>A real cube</b>It shuffles itself. Flip the switch to solve it —<br>then every tile opens its section.';
     }
   });
@@ -458,7 +459,7 @@
     rx=norm(rx); ry=norm(ry);
     cube.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;
     // self-shuffle tick
-    if(autoTwist && !twisting && !solving && !openFace && !twistDrag && !dragging && now-lastAuto>1500){
+    if(autoTwist && !autoHold && !twisting && !solving && !openFace && !twistDrag && !dragging && now-lastAuto>1500){
       lastAuto=now; twist(...randomMove());
     }
     requestAnimationFrame(frame);
@@ -538,8 +539,7 @@
   }
   function closeDrawer(){
     openFace=null; document.body.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); document.getElementById('dr-body').classList.remove('fb');
-    tabs.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    resumeAt=performance.now()+800; lastAuto=performance.now();
+    if(!autoHold){ tabs.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); resumeAt=performance.now()+800; lastAuto=performance.now(); }
   }
   scrim.addEventListener('click',closeDrawer);
   document.getElementById('dr-close').addEventListener('click',closeDrawer);
@@ -548,6 +548,7 @@
   /* ================= POINTER: click opens · drag tile twists · drag background spins ================= */
   let downX=0, downY=0, downSticker=null;
   stage.addEventListener('pointerdown', e=>{
+    if(autoHold && !e.target.closest('.sticker')) releaseTab();
     stage.setPointerCapture(e.pointerId);
     downX=e.clientX; downY=e.clientY; target=null; dvx=dvy=0;
     const st=e.target.closest('.sticker'); downSticker=st;
@@ -625,13 +626,14 @@
     const b=e.target.closest('.tab[data-face]'); if(!b) return;
     const face=b.dataset.face;
     // turn the cube to wherever this section's title tile currently sits; no drawer
-    if(openFace) closeDrawer();
+    if(openFace){ autoHold=true; closeDrawer(); }
     const c=cubies.find(k=>k.title&&k.title.face===face);
     const v=c?VIEW_FOR_N[key(mv(c.m, LOCAL_N[c.title.local]))]:null;
     if(v){ target={rx:v.rx,ry:v.ry}; }
-    dvx=dvy=0; const now=performance.now(); resumeAt=now+6000; lastAuto=now+4500;
+    // hold this face (no shuffle, no drift) until the visitor interacts again
+    if(b.classList.contains('active')){ releaseTab(); return; }
+    dvx=dvy=0; resumeAt=Infinity; autoHold=true;
     tabs.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));
-    clearTimeout(tabs._t); tabs._t=setTimeout(()=>b.classList.remove('active'),6000);
   });
   window.addEventListener('keydown', e=>{
     if(e.key>='1'&&e.key<='6'){ tabs.querySelectorAll('.tab[data-face]')[+e.key-1].click(); }
