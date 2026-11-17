@@ -109,8 +109,6 @@
   @keyframes nudge{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
   .switch.nudge{animation:nudge .5s}
   body:not(.complete) .sticker{cursor:grab}
-  body:not(.complete) .tab[data-face]{opacity:.45}
-  body:not(.complete) .tab[data-face]:hover{background:transparent;color:var(--ink-2)}
 
   /* ---------- comment icon + composer ---------- */
   .fab{position:relative;width:40px;height:40px;border-radius:999px;background:var(--surface);color:var(--ink);border:1px solid var(--border);cursor:pointer;display:grid;place-items:center;margin:0 4px;transition:background .15s,color .15s}
@@ -625,12 +623,15 @@
   /* ================= TABS + KEYS ================= */
   tabs.addEventListener('click', e=>{
     const b=e.target.closest('.tab[data-face]'); if(!b) return;
-    if(!complete){ lockedMessage(); return; }
     const face=b.dataset.face;
-    // find where this section's title tile currently is, and turn the cube to it
+    // turn the cube to wherever this section's title tile currently sits; no drawer
+    if(openFace) closeDrawer();
     const c=cubies.find(k=>k.title&&k.title.face===face);
-    const n=c?mv(c.m, LOCAL_N[c.title.local]):null;
-    openDrawer(face, n);
+    const v=c?VIEW_FOR_N[key(mv(c.m, LOCAL_N[c.title.local]))]:null;
+    if(v){ target={rx:v.rx,ry:v.ry}; }
+    dvx=dvy=0; const now=performance.now(); resumeAt=now+6000; lastAuto=now+4500;
+    tabs.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));
+    clearTimeout(tabs._t); tabs._t=setTimeout(()=>b.classList.remove('active'),6000);
   });
   window.addEventListener('keydown', e=>{
     if(e.key>='1'&&e.key<='6'){ tabs.querySelectorAll('.tab[data-face]')[+e.key-1].click(); }
